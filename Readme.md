@@ -84,3 +84,10 @@ For each index for which queries were recieved, it returns an object with 3 crit
     - "+KEYWORD" : this is useful for those numeric fields which are not utilzed for range/sort queries. such fields can be coverted to `type:keyword`
 * Hashcode is a simple hash of the optimization map, so as to quickly identify if there are any changes in the results from the previous tests instead of manually checking for any new changes in the result.
 
+
+# Compatibility
+Currently supports ES6 and ES7
+
+
+## Contact
+Contact ankur.rana@tokopedia.com for any concerns or improvements
