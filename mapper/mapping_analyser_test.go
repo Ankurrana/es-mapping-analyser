@@ -23,7 +23,7 @@ func TestGetMapping(t *testing.T) {
 		{
 			name: "Basic Test",
 			args: args{
-				"10.41.5.5",
+				"10.41.4.22:9200",
 			},
 			want: map[string]interface{}{
 				"abc": "cde",

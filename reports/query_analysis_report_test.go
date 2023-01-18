@@ -16,15 +16,26 @@ func Test_getCountStringFromOptimization(t *testing.T) {
 	t.Fail()
 }
 
-func Test_nearest10(t *testing.T) {
-	log.Print(nearest10(12))
-	log.Print(nearest10(22))
-	log.Print(nearest10(52))
-	log.Print(nearest10(132))
-	log.Print(nearest10(222))
-	log.Print(nearest10(1322))
-	log.Print(nearest10(52332))
-	log.Print(nearest10(355254))
-	log.Print(nearest10(7323122))
+func TestNearest10(t *testing.T) {
+	testCases := []struct {
+		name     string
+		input    int
+		expected int
+	}{
+		{"less than 10", 5, 1},
+		{"greater than or equal to 10 but less than 100", 22, 10},
+		{"greater than or equal to 100 but less than 1000", 314, 100},
+		{"greater than or equal to 1000 but less than 10000", 7234, 1000},
+		{"greater than or equal to 10000", 12345, 10000},
+		{"zero", 0, 1},
+	}
 
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result := nearest10(tc.input)
+			if result != tc.expected {
+				t.Errorf("For input %d, expected %d but got %d", tc.input, tc.expected, result)
+			}
+		})
+	}
 }
