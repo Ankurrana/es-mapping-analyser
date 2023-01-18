@@ -49,13 +49,13 @@ chmod 755 /usr/local/bin/go_replay
 # moving 
 cp bin/es_mapping_analyser /usr/local/bin/es_mapping_analyser
 
-if service --status-all | grep -Fq 'sp002-profiler'; then    
-  sudo service sp002-profiler stop    
-fi
+#if service --status-all | grep -Fq 'sp002-profiler'; then    
+service sp002-profiler stop    
+#fi
 
-if service --status-all | grep -Fq 'es-mapping-analyzer'; then    
-  sudo service es-mapping-analyzer stop    
-fi
+#if service --status-all | grep -Fq 'es-mapping-analyzer'; then    
+service es-mapping-analyzer stop    
+#fi
 
 
 
@@ -129,7 +129,7 @@ systemctl restart sp002-profiler
 echo "to stop analyser: service es-mapping-analyzer stop"
 echo "to stop profiler: service sp002-profiler stop"
 echo "to check report: curl localhost:${api_port}/report"
-echo "sp002 agent installation complete thanks!"
+echo "EMA installation complete thanks!"
 
 
 

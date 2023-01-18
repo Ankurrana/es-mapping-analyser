@@ -27,6 +27,15 @@ type Mapping struct {
 	} `json:"mappings"`
 }
 
+type Mapping6 struct {
+	Mappings map[string]struct {
+		Source     interface{} `json:"_source"`
+		Properties Properties  `json:"properties"`
+		Routing    interface{} `json:"_routing"`
+		Dynamic    string      `json:"dynamic"`
+	} `json:"mappings"`
+}
+
 func (properties *Properties) Print() {
 	properties.RecursivePrint(0)
 }
@@ -64,19 +73,53 @@ func GetAllMappings(es_url string) (map[string]Mapping, error) {
 	}
 
 	var response map[string]Mapping
+
 	a, err := ioutil.ReadAll(data.Body)
 	if err != nil {
 		log.Print(err)
 		return nil, err
 	}
-	err = json.Unmarshal(a, &response)
-
+	v, err := GetVersion(es_url)
 	if err != nil {
-		log.Printf("Error %v", err)
+		fmt.Print("Unable to retrieve version number for ES")
 		return nil, err
 	}
+	if v > 6 {
+		err = json.Unmarshal(a, &response)
 
+		if err != nil {
+			log.Printf("Error %v", err)
+			return nil, err
+		}
+	} else {
+		response = make(map[string]Mapping)
+
+		var response6 map[string]Mapping6
+		err = json.Unmarshal(a, &response6)
+		if err != nil {
+			log.Printf("Err: %v\n", err)
+		}
+
+		for index, mapping := range response6 {
+			override := Mapping{}
+
+			keys := make([]string, 0, len(mapping.Mappings))
+			for k := range mapping.Mappings {
+				keys = append(keys, k)
+			}
+
+			override.Mappings.Properties = mapping.Mappings[keys[0]].Properties
+			override.Mappings.Source = mapping.Mappings[keys[0]].Source
+			override.Mappings.Dynamic = mapping.Mappings[keys[0]].Dynamic
+			response[index] = override
+			log.Println(index)
+
+		}
+
+	}
+	log.Print(1)
 	return ExplodeAllIndices(response), nil
+
 }
 
 func GetAliases(es_url string) map[string]string {

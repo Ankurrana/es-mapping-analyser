@@ -1,137 +1,86 @@
-**ES Mapping Profiler**
+# Elasticsearch Mapping Analyzer
+## Introduction
+The Elasticsearch Mapping Analyzer (EMA) is a tool that automates the process of identifying potential optimizations for any Elasticsearch index, based on set of queries that are run on that index.
 
-Inputs the queries used on an index, it finds appropriate mapping for an ES index which can be used as an optimizer for the mapping definition
+EMA creates a usage map for each field in the index, based on the input queries. By analyzing this usage map, the tool can identify fields that can be converted to a more optimized type or configuration, which can save disk space, improve indexing speed, and potentially enhance search performance.
 
+## Installation
+EMA is installed on a machine that handles requests (usually the master or coordinator nodes) in a Elasticsearch cluster.
 
+## Usage
+EMA comes with a profiler that intercepts a percentage of the queries sent to the Elasticsearch server and forwards them to an internal analyzer. This analyzer then creates a usage map for each field in every index of the cluster.
 
-Functional Requirements
-1. Read queries used on an index [Done]
-2. Determines an appropriate mapping for the index [Done]
-3. Store result in a file 
-4. Read Mapping to analyse
-5. Add Close method in the Fetcher Library [DONE]
-6. How about stored_fields? [DONE]
-   // Stored Fields are generally discouraged, instead the recommendation is to use _source or doc_values 
-7. How about fields which are not searched but only sorted on? Should we do index:false
-    // We can set index false only if the field is only being used in sort, or source. In every other case we need index:true
+The analyzer is equipped with the knowledge needed to identify fields that can be converted to a more optimized type without impacting any existing queries. These recommendations are made available through an API and can be accessed in real-time. For most production systems, if the analyzer is run for a sufficient amount of time, it should cover most use cases that occur on the cluster.
 
-8. What is the difference between keyword with (index:false,doc_values:false) and object with enabled:False? 
-9. If a numeric field is being sorted on and no range queries, then we cannot convert it to keyword as it will change its sorting order [DONE]
+By default, the analyzer captures only 10% of requests sent to the Elasticsearch server. You can configure this setting to intercept all requests for clusters with low RPS.
 
-9. What is object and object with enabled:false? [OBJECT TYPE ACTUALLY PARSES JSON INTO FIELDS BUT DOES'T INDEX][DONE]
-10. What is text with index:false?
-11. How could we identify geo_point? 
-12. How to identify range of numeric fields?
+## Installation
+Download the latest version of EMA from the releases. The package includes a binary file and an installation script.
 
-13. Frequency of each field? 
-14. Size of each field?
-15. Add a check while analysing queries if all queries for a particular field are always boolean
+1. EMA uses GoReplay as a sniffing tool on the index, which is installed as a separate service called sp002-profiler. Another server, es-mapping-analyser, is installed to analyze the intercepted requests.
+2. To install EMA, run the installation script with the following command:    
+    `./install.sh -es-port [es-port] -agent-port [agent-port] -api-port [api-port] -traffic [traffic]`
 
-16. Check if keywords are actually cheaper than long? [YES, PREFER KEYWORD FOR EXACT MATCHES][DONE] 
-18. Do we need doc_values for aggregation queries? [YES] [DONE]
-19. Study the frequency of usage for every fields, we may be able to decide which usecases are rarely used.
-20. Difference between removing mapping entirely or keep it in source? 
-21. Can we use sort with keyword for numeric type fields [NO, WE CANNOT] [DONE]
-22. A system which can quickly test any 2 queries bruteforcelly
-23. Send some data to newrelic and create charts for anybody
-24. Develop an aggregator of the analysis and push the report in a file 
-25. Invert Optimizations like I want to know all fields which are not used at all, and fields for which we can remove doc_values! 
+3. The installation command takes four optional parameters as input:
+    * es-port: The Elasticsearch port that needs to be sniffed.
+    * agent-port: An internal port used by the profiler and analyzer. By default it uses 9500
+    * api-port: The port on which the EMA report will be accessible via the URL http://localhost:[api-port]/report.
+    * traffic: The percentage of traffic to be sniffed by EMA.
 
-Improvements:
-1. Can we get the frequency of most used item? [DONE]
-2. Validate multi fields support [DONE]
-3. Doesn't support all aggregations like multi_terms // (todo)
-4. Find fields which are always used concurrently
-5. Instead of this service reading  queries from DB, we can create a server which accepts queries and generate usage map in realtime?
-6. Need to evaluate all the alises of the index under analysis [DONE]
-9. Fields which have docvalues false are also recommended to remove docvalues, which is unnecessary [DONE]
-10. Fields which are only sorted cannot be converted to object, rather they need to be some type with index:false. [DONE]
-11. Can we sort on fields where index:false is false? [YES It works] [DONE]
-12. How does sorting for numeric fields work if type changed to keyword! [It sorts in alphanumeric, so we cannot convert numeric ] [DONE]
+4. After the installation is complete, the sp002-profiler and es-mapping-analyzer services will be started automatically.
 
 
+## How to read results
+EMA exposes an API `/report` to check the current status of the analysis and recommendations
 
-14. How about exists query? There are fields which only need run exists query! [We need to index such fields but no need to create doc_values] [DONE]
-15. Do fields using range queries only need doc_values? [Yes, range queries may use doc_values sometimes on the basis of data and internal scoring system of ES] [DONE]
-16. Can we also exclude fields from the source in shop index? [DONE] [YES, IT IS POSSIBLE IF WE DO NOT NEED SOME OF THE FIELDS]
+Here is the sample report
+```
+{
+	"product_v25_002": {
+		"name": "product_v25_002",
+		"queries_analysed": 100,
+		"optimizations": {
+			"+OBJECT": [
+				"annotation_id",
+				"bestmatch_score_controller",
+				"bestmatch_score_controller2",
+				"bestmatch_score_controller3",
+				"bestmatch_score_default",
+				"bestmatch_score_experiment",
+				"wholesale.quantity_max",
+				"wholesale.quantity_min"
+			],
+			"-DOCVALUES": [
+				"shop_id"
+			],
+			"-INDEX": [
+				"wholesale.price"
+			],
+            "+KEYWORD": [
+                "shop.shop_tier"
+            ]
+		},
+		"usage_frequency_map": {
+			"shop_id": {
+				"term": 50
+			},
+			"wholesale.price": {
+				"sort": 50
+			}
+		},
+		"hash_code": "3203411751-122-1-1"
+	}
+}
+```
 
-17. query_string parameter actually searches in all fields mentioned in the fields param. [IMP][DONE]
+For each index for which queries were recieved, it returns an object with 3 critical parts, queries_analysed, optimizations and hash_code. 
 
-18. Dont wait in the tail file indefinitely if the number of rows are less than batch size
-19. Check why the count is incorrect in the report [Its correct][DONE] 
-20. Include all terms level queries https://www.elastic.co/guide/en/elasticsearch/reference/master/term-level-queries.html
-
-
-
-
-21. Currently it does't support multiple indices by default... for handling product_inactive and other's I need to run the function separately... I don't want that anymore..fix that. 
-22. I should not be required to hard code anything.System should handle that itself.
-23. Only accept connection with path _search, _count and _msearch 
-
-24. Generate HashValue and Count of fields for every type of field type change, this can be used as a quick check if there was any change in the results of the optimization [Done]
-
-
-25. Fix the order of keys in hashcode of the query report [DONE]
-26. Add a debug flag in the tool
-
-
-27. Remove msearch queries from getting logged [DONE]
-28. Do not print no incoming messages everytime, once per 5 seconds (maybe once every minute if no incoming messages)
-29. Add a packaging system with eS mapper
-30. Add this to github
-
-
-31. What happens when ES is not reachable? or doesn't respond to mappings request? 
-32. Logs first 10 queries as a debugging mechanism to be used when installing the agent [Done]
-
-33. Support ES6 as well 
-
-
-Analyzer
-
-
-1. Use gor to capture realtime traffic and push it out to a file/tcp port/ http port.
-2. A different binary which reads data from the output stream in step 1, analyzes it. 
-3. It exposes report in json format on a different port which user can access directly. 
-4. Or At the end of the process, it can output a json report to a file
-
-
-./es_query_analyzer
-    --port 8080    // gor to do post to this port itself
-    --es-port 9200  // the port on which eqa sniffs
-    --sample-size 0.1 // a number between 0 and 1 to capture the percent of queries on your cluster
-    --output-file <CLUSTER_ID>
-    --index-filter * // considers all indexes by default 
-    --only-agent  // use eqa to only sniff data
-    --output-url 156:8050 // Only if you are enabling --only-agent
-    --duration 1h  // default duration for which you want to run eqa .. no need to run it forever
-    
-    
-
-
-Check current report at: 
--- localhost:8080/report
-:D Thinking on how you can improve your ES... 
-
-
-What would user do
-1. I'll give them a to download the latest version of eqa, which will be a gzip file with a few files and a binary
-2. Once you have a binary, you can run it on your machine recieving direct traffic on ES
-3. 
-
-
-.sh file
-1. downloads and installs gor
-2. Go application spawns a server on output port and starts recieving traffic
-3. Start gor to capture /search,/count and _msearch traffic on es-port
-4. Current report will be exposed to --output-port /report
-5. If user does Ctrl+C, a json_report will be exported to a file 
-
-
-
- 
-
-
-
-
+* queries_analysed is the number of queries analysed to generate this report. 
+* usage_frequency_map lists how each of the field were used in the sampled queries. Fields with no use were ignored in this map
+* optimizations: As of how, EMA gives out 4 possible optimizations "+OBJECT" , "-DOCVALUES" , "-INDEX", "+KEYWORD"
+    - "+OBJECT" : these fields are recommended to be converted to type:object and enabled:false as no use was identified for these fields.
+    - "-DOCVALUES" : fields for which we can disable doc_values are listed in this section `doc_values:false`
+    - "-INDEX" : fields that doesn't require creating inverted index. `index:false`
+    - "+KEYWORD" : this is useful for those numeric fields which are not utilzed for range/sort queries. such fields can be coverted to `type:keyword`
+* Hashcode is a simple hash of the optimization map, so as to quickly identify if there are any changes in the results from the previous tests instead of manually checking for any new changes in the result.
 

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/nxadm/tail"
 )
@@ -35,7 +36,7 @@ func (f *TailFileFetcher) GetNextJsonQueries() (map[string][]map[string]interfac
 	result := NewQuerySegregator()
 
 	tail := f.Tail
-
+	batchBreaker := 0
 	i := 0
 	for i < batch {
 		select {
@@ -54,6 +55,12 @@ func (f *TailFileFetcher) GetNextJsonQueries() (map[string][]map[string]interfac
 					result.Append(index, query)
 				}
 			}
+		default:
+			time.Sleep(1 * time.Second)
+			batchBreaker++
+		}
+		if batchBreaker > 5 {
+			break
 		}
 		i++
 	}

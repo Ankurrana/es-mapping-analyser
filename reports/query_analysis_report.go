@@ -18,7 +18,7 @@ const QUERY_BATCH_SIZE int = 10
 const MAX_FETCHES int = 100000000
 
 // Total Number of queries to be retained in the Query Report..
-const MAX_QUERIES_IN_REPORT = 200
+const MAX_QUERIES_IN_REPORT = 10
 
 type QMReport struct {
 	QueriesAnalysed      []string                            `json:"queries"`
@@ -107,6 +107,10 @@ func hash(s string) uint32 {
 }
 
 func nearest10(num int) int {
+	if num < 10 {
+		return 1
+	}
+
 	x := int(math.Log10(float64((num))))
 	return int(math.Pow(10, float64(x)))
 }
