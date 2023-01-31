@@ -129,7 +129,7 @@ systemctl restart sp002-profiler
 echo "to stop analyser: service es-mapping-analyzer stop"
 echo "to stop profiler: service sp002-profiler stop"
 echo "to check report: curl localhost:${api_port}/report"
-echo "EMA installation complete thanks!"
+echo "EMA v1 installation complete thanks!"
 
 
 

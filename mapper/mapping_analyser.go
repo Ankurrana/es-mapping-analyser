@@ -117,7 +117,6 @@ func GetAllMappings(es_url string) (map[string]Mapping, error) {
 		}
 
 	}
-	log.Print(1)
 	return ExplodeAllIndices(response), nil
 
 }

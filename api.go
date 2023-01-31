@@ -20,13 +20,24 @@ func Router() *mux.Router {
 
 func GetOptimizationReport(rw http.ResponseWriter, r *http.Request) {
 	log.Print("Getting ES Analysis Report")
-	identifier := r.URL.Query().Get("id")
-	report := ReadReport(identifier)
+	index_regex := r.URL.Query().Get("index_regex")
+	update_mapping := r.URL.Query().Get("update_mapping")
+	var err error
+	updateMapping := false
+	if update_mapping != "" {
+		updateMapping, err = strconv.ParseBool(update_mapping)
+		if err != nil {
+			fmt.Fprint(rw, "update_mapping is a boolean variable, try true,false")
+		}
+	}
+
+	report := ReadReport(index_regex, updateMapping)
 	fmt.Fprint(rw, report)
 }
 
-func ReadReport(id string) string {
-	return reports.GetReportFor(id)
+func ReadReport(index_regex string, update_mapping bool) string {
+
+	return reports.GetReportFor(index_regex, update_mapping)
 }
 
 func RunAnalysis(rw http.ResponseWriter, r *http.Request) {
