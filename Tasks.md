@@ -75,8 +75,8 @@ Improvements:
 
 
 27. Remove msearch queries from getting logged [DONE]
-28. Do not print no incoming messages everytime, once per 5 seconds (maybe once every minute if no incoming messages)
-29. Add a packaging system with eS mapper []
+28. Do not print no incoming messages everytime, once per 5 seconds (maybe once every minute if no incoming messages) [Done]
+29. Add a packaging system with eS mapper [Done]
 30. Add this to github [Done]
 
 
@@ -85,6 +85,21 @@ Improvements:
 
 33. Support ES6 as well  [Done]
 34. Add support for scroll queries and search_after [Done]
+
+
+
+
+
+
+35. Recommend the best index sort strategy for each index. 
+36. For fields with many fields, recommend if the entire object can be converted to type:object 
+37. Find patterns of queries from the data. 
+38. Updated mappings do not reflect correctly, better to reload them in some time [Done]
+39. Validate if dynamic is enabled or not, recommend to disable it. [Done]
+41. sp002 profiler sometimes stops, need to find the reason. 
+42. Add a new boolean request_param update_mapping which when true will refetch updated mapping from the ES and return updated mapping [Done]
+
+
 
 
 Analyzer
@@ -130,7 +145,6 @@ What would user do
 
 
  
-
 
 
 

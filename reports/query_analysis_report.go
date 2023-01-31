@@ -25,20 +25,26 @@ type QMReport struct {
 	QueriesAnalyzedCount int                                 `json:"queries_count"`
 	Optimizations        optimization_engine.OptimizationSet `json:"optimization"`
 	UsageMap             query_analyser.UsageMap             `json:"usage_map"`
+	Recommendations      []string                            `json:"recommendations"`
 }
 
 type QMJSONReport struct {
-	Name          string                    `json:"name"`
-	QueriesCount  int                       `json:"queries_analysed"`
-	Optimizations map[string][]string       `json:"optimizations"`
-	UsageMap      map[string]map[string]int `json:"usage_frequency_map"`
-	HashCode      string                    `json:"hash_code"`
+	Name            string                    `json:"name"`
+	QueriesCount    int                       `json:"queries_analysed"`
+	Optimizations   map[string][]string       `json:"optimizations"`
+	UsageMap        map[string]map[string]int `json:"usage_frequency_map"`
+	HashCode        string                    `json:"hash_code"`
+	Recommendations []string                  `json:"recommendations"`
 }
 
 func NewQueryReport() *QMReport {
 	optimizationSet := optimization_engine.OptimizationSet{}
 	usageMap := query_analyser.UsageMap{}
-	return &QMReport{[]string{}, 0, optimizationSet, usageMap}
+	recommendations := []string{}
+	qmr := QMReport{[]string{}, 0, optimizationSet, usageMap, recommendations}
+	qmr.Recommendations = recommendations
+
+	return &qmr
 }
 
 func (qmr *QMReport) AddQuery(str string) {
@@ -65,6 +71,10 @@ func (qmr *QMReport) Initialize(usageMap query_analyser.UsageMap, os optimizatio
 	qmr.Optimizations = os
 }
 
+func (qmr *QMReport) AddRecommendations(recommendations []string) {
+	qmr.Recommendations = recommendations
+}
+
 func (qm *QMReport) Print() {
 	queries_count := qm.QueriesAnalyzedCount
 	fmt.Printf("Queries Analysed:%v\n\n", queries_count)
@@ -83,6 +93,7 @@ func (qm *QMReport) JSONReport(name string) QMJSONReport {
 	j.Optimizations = qm.Optimizations.InverseSet()
 	j.HashCode = fmt.Sprintf("%v%v", (hash(fmt.Sprint(j.Optimizations))), getCountStringFromOptimization(j.Optimizations))
 	j.UsageMap = qm.UsageMap.FrequencyMap
+	j.Recommendations = qm.Recommendations
 
 	return j
 }
