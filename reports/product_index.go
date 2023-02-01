@@ -159,7 +159,7 @@ func GetReportFor(index_regex string, update_mapping bool) string {
 		return ""
 	}
 	if update_mapping {
-		RefreshAliasesAndMapping()
+		RefreshClusterAnalyserState()
 	}
 	ClusterAnalysis.PopulateOptimizations(index_regex)
 	re := regexp.MustCompile(index_regex)

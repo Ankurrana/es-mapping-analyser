@@ -99,7 +99,10 @@ Improvements:
 41. sp002 profiler sometimes stops, need to find the reason. 
 42. Add a new boolean request_param update_mapping which when true will refetch updated mapping from the ES and return updated mapping [Done]
 
+43. Add a new Static recommendation engine which performs static analysis on the basis of mapping definition. for ex. dyanmic should be strict or false and other static settings like default index sort is also not available in the mapping object.  
 
+
+44. Add Benchmarking results in the Readme. 
 
 
 Analyzer
