@@ -103,6 +103,9 @@ Improvements:
 
 
 44. Add Benchmarking results in the Readme. 
+45. If usage is only exists then no need to index set index:false
+46. If usage is match, then also no need to index, set doc_values:false
+47. Can we recommend mapping as well instead of giving out result? 
 
 
 Analyzer

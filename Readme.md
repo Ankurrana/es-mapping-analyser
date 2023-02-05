@@ -118,12 +118,24 @@ For each index for which queries were recieved, it returns an object with 3 crit
 1. Report Request Param: index_regex. Accepts regex to get report for indices matching regex
 `http://localhost:8123/report?index_regex=product_retail_v5`
 
-2. 
+2. Update Mapping Param: If you have updated the mapping of the index and need to get the report with updated mapping use update_mapping=true param.
+`http://localhost:8123/report?update_mapping=true`
+
+
+# Architecture
+![EMA Architecture Diagram](/ema.svg "EMA Architecture Diagram")
 
 
 # Compatibility
 Currently supports ES6 and ES7
 
+
+
+# Build Command
+```
+	./package.sh
+	
+```
 
 ## Contact
 Contact ankur.rana@tokopedia.com for any concerns or improvements
