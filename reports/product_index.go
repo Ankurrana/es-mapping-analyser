@@ -99,7 +99,7 @@ func (az *ClusterAnalyzer) PopulateRecommendations(mappings map[string]mapper.Ma
 
 	for index, mappings := range mappings {
 		if mappings.Mappings.Dynamic == "" || mappings.Mappings.Dynamic == "true" {
-			az.Recommendations[index] = append(az.Recommendations[index], fmt.Sprintf(SET_DYNAMIC_MAPPING_FALSE, index))
+			az.Recommendations[index] = append(az.Recommendations[index], SET_DYNAMIC_MAPPING_FALSE)
 		}
 	}
 }

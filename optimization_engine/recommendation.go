@@ -68,7 +68,7 @@ func FindOptimizations(usageMap *query_analyser.UsageMap, properties mapper.Prop
 		2. Checks if some fields are never searched, then recommends type:object for them.
 		3. Checks if Texts can be converted to keyword if usage is only exact matches.
 		4. Checks if numeric fields like long/short/byte can be converted to keyword
-		   if usage does not have range queries.
+		   if usage does not have range or sort queries.
 		   Todo: Are keywords cheaper than long?
 
 		Also checks if we can optimize ES query by tweaking mapping?
