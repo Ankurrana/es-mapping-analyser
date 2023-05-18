@@ -91,6 +91,7 @@ Improvements:
 
 
 
+
 35. Recommend the best index sort strategy for each index. 
 36. For fields with many fields, recommend if the entire object can be converted to type:object 
 37. Find patterns of queries from the data. 
@@ -105,6 +106,10 @@ Improvements:
 44. Add Benchmarking results in the Readme.  
 46. If usage is match, then also no need to index, set doc_values:false [Done]
 47. Can we recommend mapping as well instead of giving out result? 
+48. Add a --debug clause to sp002 profiler as well. 
+
+
+49. 
 
 
 Analyzer
@@ -150,6 +155,13 @@ What would user do
 
 
  
+
+
+# Custom Query Analyser
+
+1. Identifies the conditions which are most common in the set of all queries that we run. Can we identify the part of the search space which aren most commonly accessed?
+2. If we can identify those then 
+
 
 
 
