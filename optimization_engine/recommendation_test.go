@@ -19,9 +19,6 @@ func TestFindOptimizations(t *testing.T) {
 	k["match"] = 10
 	usageMap.FrequencyMap["MyMatchField"] = k
 
-	p := mapper.Properties{}
-	p.Type = "keyword"
-
 	FindOptimizations(usageMap, properties)
 
 }

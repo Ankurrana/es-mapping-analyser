@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/ankur-toko/es-mapping-analyser/features/es_mapping_profiler/utils"
+	"github.com/ankur-toko/es-mapping-analyser/utils"
 )
 
 var myJson string = `{

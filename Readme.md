@@ -114,12 +114,19 @@ For each index for which queries were recieved, it returns an object with 3 crit
     - "+KEYWORD" : this is useful for those numeric fields which are not utilzed for range/sort queries. such fields can be coverted to `type:keyword`
 * Hashcode is a simple hash of the optimization map, so as to quickly identify if there are any changes in the results from the previous tests instead of manually checking for any new changes in the result.
 
+
+
 # Options 
 1. Report Request Param: index_regex. Accepts regex to get report for indices matching regex
 `http://localhost:8123/report?index_regex=product_retail_v5`
 
 2. Update Mapping Param: If you have updated the mapping of the index and need to get the report with updated mapping use update_mapping=true param.
 `http://localhost:8123/report?update_mapping=true`
+
+3. WebUI for usage frequency map can be seen using the below url
+	`http://localhost:8123/report-ui`
+	![Example](/example_graph.png "Example Usage Frequency Map")
+
 
 
 # Architecture

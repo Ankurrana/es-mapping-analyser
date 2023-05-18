@@ -153,10 +153,10 @@ func GetAPIFetcher(port int) json_fetchers.Fetcher {
 	return fetcher
 }
 
-func GetReportFor(index_regex string, update_mapping bool) string {
+func GetQUMMapReportFor(index_regex string, update_mapping bool) map[string]QMJSONReport {
 	m := map[string]QMJSONReport{}
 	if ClusterAnalysis == nil {
-		return ""
+		return nil
 	}
 	if update_mapping {
 		RefreshClusterAnalyserState()
@@ -172,6 +172,11 @@ func GetReportFor(index_regex string, update_mapping bool) string {
 		}
 	}
 
+	return m
+}
+
+func GetReportFor(index_regex string, update_mapping bool) string {
+	m := GetQUMMapReportFor(index_regex, update_mapping)
 	jsonString, err := json.MarshalIndent(m, "", "\t")
 	if err != nil {
 		log.Print(err)
