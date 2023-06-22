@@ -10,7 +10,7 @@
             "request": "launch",
             "mode": "auto",
             "program": "/Users/ankurrana-mbp/Documents/codebase/es-query-analyser/",
-            "args": ["-es-url","10.21.2.18:9200","-port","80"]
+            "args": ["-es-url","10.21.3.188:9200","-port","80"]
         }
     ]
 }

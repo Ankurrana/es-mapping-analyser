@@ -110,6 +110,7 @@ Improvements:
 
 
 49. Add Test Cases and a standard way to run test cases. 
+50. Recommended mapping need to remove all other settings for object
 
 
 Analyzer
