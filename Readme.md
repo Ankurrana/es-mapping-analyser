@@ -145,4 +145,4 @@ Currently supports ES6 and ES7
 ```
 
 ## Contact
-Contact ankur.rana@tokopedia.com for any concerns or improvements
+Contact ankurofficial@hotmail.com for any concerns or improvements
