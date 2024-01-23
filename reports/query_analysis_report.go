@@ -1,6 +1,7 @@
 package reports
 
 import (
+	"encoding/json"
 	"fmt"
 	"hash/fnv"
 	"log"
@@ -26,22 +27,24 @@ type QMReport struct {
 	Optimizations        optimization_engine.OptimizationSet `json:"optimization"`
 	UsageMap             query_analyser.UsageMap             `json:"usage_map"`
 	Recommendations      []string                            `json:"recommendations"`
+	RecommendedMapping   json.RawMessage                     `json:"recommended_mapping"`
 }
 
 type QMJSONReport struct {
-	Name            string                    `json:"name"`
-	QueriesCount    int                       `json:"queries_analysed"`
-	Optimizations   map[string][]string       `json:"optimizations"`
-	UsageMap        map[string]map[string]int `json:"usage_frequency_map"`
-	HashCode        string                    `json:"hash_code"`
-	Recommendations []string                  `json:"recommendations"`
+	Name               string                    `json:"name"`
+	QueriesCount       int                       `json:"queries_analysed"`
+	Optimizations      map[string][]string       `json:"optimizations"`
+	UsageMap           map[string]map[string]int `json:"usage_frequency_map"`
+	HashCode           string                    `json:"hash_code"`
+	RecommendedMapping json.RawMessage           `json:"recommended_mapping"`
+	Recommendations    []string                  `json:"recommendations"`
 }
 
 func NewQueryReport() *QMReport {
 	optimizationSet := optimization_engine.OptimizationSet{}
 	usageMap := query_analyser.UsageMap{}
 	recommendations := []string{}
-	qmr := QMReport{[]string{}, 0, optimizationSet, usageMap, recommendations}
+	qmr := QMReport{[]string{}, 0, optimizationSet, usageMap, recommendations, json.RawMessage{}}
 	qmr.Recommendations = recommendations
 
 	return &qmr
@@ -75,6 +78,12 @@ func (qmr *QMReport) AddRecommendations(recommendations []string) {
 	qmr.Recommendations = recommendations
 }
 
+func (qmr *QMReport) AddRecommendedMapping(mapping string) {
+	var k json.RawMessage
+	json.Unmarshal([]byte(mapping), &k)
+	qmr.RecommendedMapping = k
+}
+
 func (qm *QMReport) Print() {
 	queries_count := qm.QueriesAnalyzedCount
 	fmt.Printf("Queries Analysed:%v\n\n", queries_count)
@@ -94,6 +103,7 @@ func (qm *QMReport) JSONReport(name string) QMJSONReport {
 	j.HashCode = fmt.Sprintf("%v%v", (hash(fmt.Sprint(j.Optimizations))), getCountStringFromOptimization(j.Optimizations))
 	j.UsageMap = qm.UsageMap.FrequencyMap
 	j.Recommendations = qm.Recommendations
+	j.RecommendedMapping = qm.RecommendedMapping
 
 	return j
 }

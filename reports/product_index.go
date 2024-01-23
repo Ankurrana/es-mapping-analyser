@@ -14,6 +14,7 @@ import (
 
 	"github.com/ankur-toko/es-mapping-analyser/json_fetchers"
 	"github.com/ankur-toko/es-mapping-analyser/mapper"
+	"github.com/ankur-toko/es-mapping-analyser/mapping_definer"
 	"github.com/ankur-toko/es-mapping-analyser/optimization_engine"
 	"github.com/ankur-toko/es-mapping-analyser/query_analyser"
 )
@@ -23,6 +24,7 @@ var ClusterAnalysis *ClusterAnalyzer
 type ClusterAnalyzer struct {
 	UsageMapMap      map[string]query_analyser.UsageMap
 	PropertiesMap    map[string]mapper.Properties
+	RawMappingMap    map[string]json.RawMessage
 	OptimizationsMap map[string]optimization_engine.OptimizationSet
 	Recommendations  map[string][]string
 	QReportMap       map[string]*QMReport
@@ -31,12 +33,13 @@ type ClusterAnalyzer struct {
 	mu               sync.Mutex
 }
 
-func NewClusterAnalyzer(mappings map[string]mapper.Mapping, raw_aliases map[string]string, esUrl string) *ClusterAnalyzer {
+func NewClusterAnalyzer(mappings map[string]mapper.Mapping, raw_aliases map[string]string, esUrl string, rawMappingResponse map[string]json.RawMessage) *ClusterAnalyzer {
 	az := ClusterAnalyzer{}
 	ClusterAnalysis = &az
 	az.UsageMapMap = make(map[string]query_analyser.UsageMap)
 	az.PropertiesMap = make(map[string]mapper.Properties)
 	az.QReportMap = make(map[string]*QMReport)
+	az.RawMappingMap = rawMappingResponse
 	az.AliasesMap = raw_aliases
 	az.ESURL = esUrl
 	az.PopulateRecommendations(mappings)
@@ -73,18 +76,20 @@ func (az *ClusterAnalyzer) PopulateOptimizations(indices string) {
 		optimizations := optimization_engine.FindOptimizations(&usageMap, az.PropertiesMap[index])
 		qm.Initialize(usageMap, optimizations)
 		qm.AddRecommendations(az.Recommendations[index])
+		qm.AddRecommendedMapping(mapping_definer.RecommendMapping(az.RawMappingMap[index], optimizations))
 		qm.Print()
 	}
 }
 
 func RefreshClusterAnalyserState() {
-	allIndexesMap, err := mapper.GetAllMappings(ClusterAnalysis.ESURL)
+	allIndexesMap, RawMappingMap, err := mapper.GetAllMappings(ClusterAnalysis.ESURL)
 	if err != nil {
 		log.Printf("Unable to update mapping %v\n", err.Error())
 	}
 	all_aliases := mapper.GetAliases(ClusterAnalysis.ESURL)
 
 	ClusterAnalysis.AliasesMap = all_aliases
+	ClusterAnalysis.RawMappingMap = RawMappingMap
 	ClusterAnalysis.PopulateRecommendations(allIndexesMap)
 	ClusterAnalysis.mu.Lock()
 	for index, mapping := range allIndexesMap {
@@ -105,10 +110,10 @@ func (az *ClusterAnalyzer) PopulateRecommendations(mappings map[string]mapper.Ma
 }
 
 func RunAnalysis(esUrl string, port int) error {
-	allIndexesMap, err := mapper.GetAllMappings(esUrl)
+	allIndexesMap, rawMappingsMap, err := mapper.GetAllMappings(esUrl)
 	all_aliases := mapper.GetAliases(esUrl)
 	no_data_count := 0
-	az := NewClusterAnalyzer(allIndexesMap, all_aliases, esUrl)
+	az := NewClusterAnalyzer(allIndexesMap, all_aliases, esUrl, rawMappingsMap)
 
 	fetcher := GetFetcher_Product(port)
 	defer fetcher.Close()

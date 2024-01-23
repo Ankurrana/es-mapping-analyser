@@ -64,12 +64,14 @@ func (mapping *Mapping) Print() {
 
 // Given an index it reads all its fields as well as fields in inner object types flattened
 // are returned
-func GetAllMappings(es_url string) (map[string]Mapping, error) {
+func GetAllMappings(es_url string) (map[string]Mapping, map[string]json.RawMessage, error) {
 	req := fmt.Sprintf("http://%v/_mapping", es_url)
+
+	rawMappingMap := make(map[string]json.RawMessage)
 
 	data, err := http.Get(req)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	var response map[string]Mapping
@@ -77,25 +79,37 @@ func GetAllMappings(es_url string) (map[string]Mapping, error) {
 	a, err := ioutil.ReadAll(data.Body)
 	if err != nil {
 		log.Print(err)
-		return nil, err
+		return nil, nil, err
 	}
 	v, err := GetVersion(es_url)
 	if err != nil {
 		fmt.Print("Unable to retrieve version number for ES")
-		return nil, err
+		return nil, nil, err
 	}
 	if v > 6 {
 		err = json.Unmarshal(a, &response)
 
 		if err != nil {
 			log.Printf("Error %v", err)
-			return nil, err
+			return nil, nil, err
+		}
+
+		err = json.Unmarshal(a, &rawMappingMap)
+		if err != nil {
+			log.Printf("Error %v", err)
+			return nil, nil, err
 		}
 	} else {
 		response = make(map[string]Mapping)
 
+		var rawMapping6 map[string]map[string]json.RawMessage
 		var response6 map[string]Mapping6
+		err = json.Unmarshal(a, &rawMapping6)
+		if err != nil {
+			log.Printf("Err: %v\n", err)
+		}
 		err = json.Unmarshal(a, &response6)
+
 		if err != nil {
 			log.Printf("Err: %v\n", err)
 		}
@@ -113,11 +127,18 @@ func GetAllMappings(es_url string) (map[string]Mapping, error) {
 			override.Mappings.Dynamic = mapping.Mappings[keys[0]].Dynamic
 			response[index] = override
 			log.Println(index)
+		}
 
+		for index, mapping := range rawMapping6 {
+			keys := make([]string, 0, len(mapping))
+			for k, _ := range mapping {
+				keys = append(keys, k)
+			}
+			rawMappingMap[index] = rawMapping6[index][keys[0]]
 		}
 
 	}
-	return ExplodeAllIndices(response), nil
+	return ExplodeAllIndices(response), rawMappingMap, nil
 
 }
 
