@@ -31,7 +31,7 @@ Download the latest version of EMA from the releases. The package includes a bin
 
 
 ## How to read results
-EMA exposes an API `/report` to check the current status of the analysis and recommendations
+EMA exposes an API `/report` to check the current status of the analysis and recommendations 
 
 Here is the sample report
 ```
