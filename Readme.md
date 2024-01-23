@@ -123,7 +123,7 @@ For each index for which queries were recieved, it returns an object with 3 crit
 2. Update Mapping Param: If you have updated the mapping of the index and need to get the report with updated mapping use update_mapping=true param.
 `http://localhost:8123/report?update_mapping=true`
 
-3. WebUI for usage frequency map can be seen using the below url
+3. WebUI for usage frequency map can be seen using the below url 
 	`http://localhost:8123/report-ui`
 	![Example](/example_graph.png "Example Usage Frequency Map")
 
